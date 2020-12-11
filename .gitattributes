@@ -6,3 +6,4 @@ vaccine_scenarios_50.csv filter=lfs diff=lfs merge=lfs -text
 vaccine_scenarios_60.csv filter=lfs diff=lfs merge=lfs -text
 vaccine_scenarios_70.csv filter=lfs diff=lfs merge=lfs -text
 vaccine_scenarios_80.csv filter=lfs diff=lfs merge=lfs -text
+vaccine_scenarios_90.csv filter=lfs diff=lfs merge=lfs -text
