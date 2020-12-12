@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<head>
+    <link href="style.css" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.1.2/papaparse.js"></script>
+    <script src="https://d3js.org/d3.v4.js"></script>
+</head>
+<body>
+  <h1>SEIR Model with Vaccination and Reinfection</h1>
+    <div class="row">
+        <div class="column" style="background-color: #DDDDDD">
+            <h2>Active cases</h2>
+            <div id="activeCasesPlot"></div>
+            <h2>Total cases</h2>
+            <div id="deathCasesPlot"></div>
+        </div>
+        <div class="column" style="background-color: white">
+            <h2>Set vaccine parameters</h2>
+            <p><label>
+                Efficacy <span id="eff-value">…</span>
+              </label>
+              <input type="range" min="10" max="100" step="10" value="50" class="slider" id="eff"></p>
+            <p>
+              <label>
+                Coverage <span id="cov-value">…</span>
+              </label>
+              <input type="range" min="10" max="100" step="10" value="50" class="slider" id="cov"></p>
+            <p>
+              <label>
+                Starting month <span id="st-value">…</span>
+              </label>
+              <input type="range" min="0" max="6" step="1" value="0" class="slider" id="st"></p>
+            <p>
+              <label>
+                Window (months) <span id="win-value">…</span>
+              </label>
+              <input type="range" min="1" max="4" step="1" value="1" class="slider" id="win"></p>
+            <p>
+              <label>
+                Durability (months) <span id="dur-value">…</span>
+              </label>
+              <input type="range" min="3" max="12" step="3" value="6" class="slider" id="dur"></p>
+            <p>
+              <label>
+                Vaccine prevents transmission 
+              </label>
+              <input type="checkbox" class="checkboxselect" id="trans"></p>
+            <p>
+              <label>
+                Vaccine reduces symptoms (IPR)*
+              </label>
+              <input type="checkbox" class="checkboxselect" id="symp"></p>
+            <p>
+              <footer>
+                * For the portion of inoculated population for which the vaccine provides an inadequate primary response.
+              </footer></p>
+            <p>
+              <h2>Parameters of the SEIR model</h2>
+              <footer>
+                <p>Transmission rate (&beta;): 0.35</p>
+                <p>Reduction rate for transmission from mildly/asymptomatic infected (&alpha;<sub>C</sub>): 0.75
+                <p>Incubation period (1/&mu;): 4 days</p>
+                <p>Vaccine incubation period (1/&mu;<sub>V</sub>): 14 days</p>
+                <p>Proportaion of exposed becoming moderately/severely infected (&theta;): 0.6</p>
+                <p>Infectious period of moderately/severely infected (1/&gamma;<sub>I</sub>): 4 days</p>
+                <p>Infectious period of mildly/asymptomatic infected (1/&gamma;<sub>C</sub>): 8 days</p>
+                <p>Infectious period of vaccinated if infected (1/&gamma;<sub>P</sub>): 4 days</p>
+                <p>Death rate (1/&sigma;): 0.1/15</p>
+                <p>Immunity period due to moderate/severe infection (1/&omega;<sub>I</sub>): 180 days</p>
+                <p>Immunity period due to mild/asymptomatic infection (1/&omega;<sub>C</sub>): 90 days</p>
+                <p><i>In the next update, parameters of the SEIR model will be variable.</i></p>
+                
+
+        </div>
+    </div>
+</body>
+
+
+<script>
+// set the dimensions and margins of the graph
+var margin = {top: 10, right: 10, bottom: 80, left: 80},
+  width = 700 - margin.left - margin.right,
+  height = 400 - margin.top - margin.bottom;
+
+// append the svg object to the body of the page
+var plotID = ["#activeCasesPlot", "#deathCasesPlot"];
+var svg = d3.range(2);
+for (let i = 0; i<plotID.length; i++) {
+  svg[i] = d3.select(plotID[i])
+    .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+};
+
+// Define the line
+  var valueline0 = d3.line()
+    .x(function(d,i) { return xAxis(i) })
+    .y(function(d) { return yAxis0(d) });
+  var valueline1 = d3.line()
+    .x(function(d,i) { return xAxis(i) })
+    .y(function(d) { return yAxis1(d) });
+
+  // Add X axis
+  xAxis = d3.scaleLinear()
+    .domain( [0, 360])
+    .range([ 0, width ]);
+
+  for (let i = 0; i<plotID.length; i++) {
+    svg[i].append("g")
+      .attr('class', 'x')
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(xAxis)
+        .tickValues(Array.from(new Array(13),(val,index)=>index*30))
+        .tickFormat((d,i) => Array.from(new Array(13),(val,index)=>index)[i]))
+      .selectAll(".tick text")
+      .attr("font-size","16")
+      .attr("font-family","cursive");
+    // X axis label
+    svg[i].append("text")             
+        .attr("transform",
+              "translate(" + (width/2) + " ," + 
+                             (height + margin.top + 40) + ")")
+        .style("text-anchor", "middle")
+        .text("Months")
+        .attr("font-size","20")
+        .attr("font-family","cursive")
+  };
+
+  // Add Y axis
+  yAxis0 = d3.scaleLinear()
+    .domain( [0, 3])
+    .range([height, 0]);
+  yAxis1 = d3.scaleLinear()
+    .domain( [0, 60])
+    .range([height, 0]);
+
+  var yAxes = [yAxis0, yAxis1]
+
+  svg[0].append("g")
+    .attr('class', 'y')
+    .call(d3.axisLeft(yAxis0)
+      .tickValues(Array.from(new Array(9),(val,index)=>index*0.5)))
+    .selectAll(".tick text")
+    .attr("font-size","16")
+    .attr("font-family","cursive");
+  svg[1].append("g")
+    .attr('class', 'y')
+    .call(d3.axisLeft(yAxis1)
+      .tickValues(Array.from(new Array(13),(val,index)=>index*5)))
+    .selectAll(".tick text")
+    .attr("font-size","16")
+    .attr("font-family","cursive");
+  
+  for (let i = 0; i<plotID.length; i++) {
+    // y axis label
+    svg[i].append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 0 - margin.left)
+        .attr("x",0 - (height / 2))
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .text("(% of population)")
+        .attr("font-size","20")
+        .attr("font-family","cursive")
+  };
+
+  // add the X gridlines
+  for (let i = 0; i<plotID.length; i++) {
+    svg[i].append("g")     
+        .attr("class", "grid")
+        .attr("transform", "translate(0," + height + ")")
+        .call(make_x_gridlines())
+  };
+  // add the Y gridlines
+  svg[0].append("g")     
+      .attr("class", "grid")
+      .call(make_y_gridlines0());
+  svg[1].append("g")     
+      .attr("class", "grid")
+      .call(make_y_gridlines1());
+
+  // Add border
+  for (let i = 0; i<plotID.length; i++) {
+    svg[i].append("rect")
+      .attr("x", 0)
+      .attr("y", 0)
+      .attr("height", height)
+      .attr("width", width)
+      .style("stroke", "black")
+      .style("fill", "none")
+      .style("stroke-width", 1.5)
+  };
+
+  // add no vaccine  
+  d3.csv("https://raw.githubusercontent.com/fardadhp/covid19_vaccine/main/core/vaccine_scenarios_10_10_0.csv", function (data) {
+      output = getData(data,0,0,0,1,0,false,false);
+      svg[0].append("path")
+        .datum(output.y)
+        .attr('id', 'noVacc')
+        .attr('class', 'line')
+        .attr("fill", "none")
+        .attr("stroke", "#4d9987")
+        .attr("stroke-width", 1.5)
+        .style("stroke-dasharray", ("3, 3"))
+        .attr("d", valueline0(output.y))
+      svg[1].append("path")
+        .datum(output.z)
+        .attr('id', 'noVacc')
+        .attr('class', 'line')
+        .attr("fill", "none")
+        .attr("stroke", "#4d9987")
+        .attr("stroke-width", 1.5)
+        .style("stroke-dasharray", ("3, 3"))
+        .attr("d", valueline1(output.z))
+    });
+
+  // Add graph
+  d3.csv("https://raw.githubusercontent.com/fardadhp/covid19_vaccine/main/core/vaccine_scenarios_50_50_0.csv", function (data) {
+      getVariables();
+      output = getData(data,efficacy,coverage,start,vwindow,durability,i01,s01);
+      svg[0].append("path") 
+        .datum(output.y)
+        .attr('id', 'vacc')
+        .attr('class', 'line')
+        .attr("fill", "none")
+        .attr("stroke", "#404080")
+        .attr("stroke-width", 1.5)
+        .attr("d", valueline0(output.y))
+      svg[1].append("path") 
+        .datum(output.z)
+        .attr('id', 'vacc')
+        .attr('class', 'line')
+        .attr("fill", "none")
+        .attr("stroke", "#404080")
+        .attr("stroke-width", 1.5)
+        .attr("d", valueline1(output.z))
+    });
+
+  // Add box for vaccination window
+  var rectData = [{x: 0, y: 0, width: 30, height:3}];
+  for (let i = 0; i<plotID.length; i++) {
+    svg[i].append("rect")
+      .attr('id', 'vw')
+      .attr("x", 0)
+      .attr("y", 0)
+      .attr("width", 30*width/360)
+      .attr("height", height)
+      .style('fill','green')
+      .style('opacity', 0.1)
+  };
+
+  // Legend
+  for (let i = 0; i<plotID.length; i++) {
+    svg[i].append("circle").attr("cx",width-20).attr("cy",20).attr("r", 5).style("fill", "#4d9987");
+    svg[i].append("rect").attr("x",width-25).attr("y",40).attr("width", 10).attr("height", 10).style("fill", "green").style('opacity', 0.3);
+    svg[i].append("text").attr("x", width-115).attr("y", 20).text("No vaccine").style("font-size", "14px").style("font-family","cursive")
+    .attr("alignment-baseline","middle");
+    svg[i].append("text").attr("x", width-170).attr("y", 45).text("Vaccination window").style("font-size", "14px").style("font-family","cursive")
+    .attr("alignment-baseline","middle")
+  };
+
+  var slidersID = ["eff","cov","st","win","dur"];
+  var slidersValueID = ["eff-value","cov-value","st-value","win-value","dur-value"];
+  for (let i = 0; i<slidersID.length; i++) {
+    updateVariable(slidersID[i], slidersValueID[i]);
+  }
+  getVariables();
+
+  // read changes from sliders
+  for (let i = 0; i<slidersID.length; i++) {
+    let cid = "#"+slidersID[i]
+    d3.select(cid).on("input", function() {
+      updateVariable(slidersID[i], slidersValueID[i]);
+      updatePlot();
+    })
+  };
+
+  var checkboxID = ["trans","symp","st","win","dur"];
+  // read changes from checkboxes
+  for (let i = 0; i<checkboxID.length; i++) {
+    let cid = "#"+checkboxID[i]
+    d3.select(cid).on("input", function() {
+      updatePlot();
+    })
+  };
+ 
+ // gridlines in x axis function
+  function make_x_gridlines() {   
+      return d3.axisBottom(xAxis)
+        .tickValues(Array.from(new Array(13),(val,index)=>index*30))
+        .tickSize(-height)
+        .tickFormat("")
+          
+  };
+  // gridlines in y axis function
+  function make_y_gridlines0() {   
+      return d3.axisLeft(yAxis0)
+        .ticks(6)
+        .tickSize(-width)
+        .tickFormat("")
+
+  };
+  function make_y_gridlines1() {   
+      return d3.axisLeft(yAxis1)
+        .ticks(12)
+        .tickSize(-width)
+        .tickFormat("")
+  };
+
+  function updateVariable(sliderID, valueID) {
+    var slider = document.getElementById(sliderID);
+    var val = document.getElementById(valueID);
+    let update = () => val.innerHTML = slider.value;
+    slider.addEventListener('input', update);
+    update();
+  };
+
+  function getVariables() {
+    efficacy = parseInt(document.getElementById("eff").value);
+    coverage = parseInt(document.getElementById("cov").value);
+    start = parseInt(document.getElementById("st").value);
+    vwindow = parseInt(document.getElementById("win").value)*30;
+    durability = parseInt(document.getElementById("dur").value)*30;
+    i01 = document.getElementById("trans").checked;
+    s01 = document.getElementById("symp").checked;
+  };
+
+  function getData(data,ev,lambda,t0,phi,omega,i01,s01) {
+    inft=[], death=[];
+    let vacc = "none";
+    if (ev > 0) {
+      vacc = "";
+      if (i01) {vacc = "I0-"} else {vacc = "I1-"};
+      if (s01) {vacc = vacc + "S0"} else {vacc = vacc + "S1"};
+    }
+    for(var i=0; i<data.length; i++) {
+      if ((Math.abs(data[i]['durability']-omega)<0.05) && (Math.abs(data[i]['vacc_window']-phi)<0.05) && (data[i]["vacc_type"] == vacc)) {
+        inft.push(data[i]['infected'].slice(2,-2).split(',').map(Number));
+        death.push(data[i]['death'].slice(2,-2).split(',').map(Number));
+        break;
+      }
+    }
+    // var output = [x, inft, death];
+    return {y:inft[0].slice(0,360), z:death[0].slice(0,360)};
+  };
+
+  function updatePlot() {
+    getVariables();
+    var pathname = "https://raw.githubusercontent.com/fardadhp/covid19_vaccine/main/core/vaccine_scenarios_"+efficacy+"_"+coverage+"_"+start+".csv";
+    d3.csv(pathname, function(data) {    
+      console.log(efficacy,coverage,start,vwindow,durability,i01,s01);
+      output = getData(data,efficacy,coverage,start,vwindow,durability,i01,s01);
+      console.log(output);
+      // Add the line
+      svg[0].selectAll("path#vacc.line").transition()
+          .duration(1000)
+          .attr("d", valueline0(output.y));
+      svg[1].selectAll("path#vacc.line").transition()
+          .duration(1000)
+          .attr("d", valueline1(output.z));
+      for (let i = 0; i<plotID.length; i++) {
+        svg[i].selectAll("rect#vw").transition()
+          .duration(1000)
+          .attr("x", start*30*width/360)
+          .attr("width", vwindow*width/360)
+      }
+    })
+  }
+
+</script>

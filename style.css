@@ -1,0 +1,69 @@
+{
+    box-sizing: border-box;
+}
+.column {
+float: left;
+width: 50%;
+}
+
+.row:after {
+content: "";
+display: table;
+clear: both;
+}
+
+.slider {
+  	width: 25%; 
+}
+
+span {
+	display: inline-block;
+  	width: 30px;
+  	font-weight: 500;
+  	font-family: Garamond;
+}
+
+label {
+	display: inline-block; 
+	width: 350px; 
+	text-align: right; 
+	font-size: 20px; 
+	font-weight: 700; 
+	font-family: Garamond; 
+	padding-right: 20px;
+	}
+
+h1 {
+	font-size: 28px;
+	font-weight: 800;
+	font-family: Georgia;
+	text-align: center;
+	color: #404080;
+	}
+h2 {
+	font-size: 28px;
+	font-weight: 800;
+	font-family: Garamond;
+	text-align: center;
+}
+
+body {
+	background-color: white;
+}
+li{
+	margin: 10px 0;
+	font-size: 20px;
+}
+footer {
+	display: inline-block; 
+	width: 350px; 
+	text-align: left; 
+	font-size: 20px; 
+	font-family: Garamond;
+	padding-left: 60px
+}
+
+.grid line {
+  stroke: lightgrey;
+  stroke-opacity: 1;
+}
