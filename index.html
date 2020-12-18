@@ -2,21 +2,23 @@
 <meta charset="utf-8">
 <head>
     <link href="style.css" rel="stylesheet">
+    <link href='https://fonts.googleapis.com/css?family=PT+Sans:700' rel='stylesheet' type='text/css'>
+	<link href='https://fonts.googleapis.com/css?family=Open+Sans:400,italic,400italic,600italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.1.2/papaparse.js"></script>
     <script src="https://d3js.org/d3.v4.js"></script>
+
 </head>
 <body>
   <h1>SEIR Model with Vaccination and Reinfection</h1>
+  <p><em><b>SEIR (Susceptible-Exposed-Infectious-Recovered) is a compartmental model used to study how infectious diseases, such as COVID-19, spread using ordinary differential equations (ODEs). The model is improved by considering the effects of vaccination and reinfection. The infectious population is further divided into two types: (1) those with moderate to severe symptoms, which can lead to detection and are highly infectious, and (2) those with mild or no symptoms (asymptomatic), which remain undetected and may be less infectious.</b></em></p>
     <div class="row">
-        <div class="column" style="background-color: #DDDDDD">
-            <h2>Active cases</h2>
+        <div class="column">
             <div id="activeCasesPlot"></div>
-            <h2>Total cases</h2>
             <div id="deathCasesPlot"></div>
         </div>
-        <div class="column" style="background-color: white">
+        <div class="column">
             <h2>Set vaccine parameters</h2>
             <p>
               <label>
@@ -62,23 +64,6 @@
               <footer>
                 * For the portion of inoculated population for which the vaccine provides an inadequate primary response.
               </footer></p>
-            <p>
-              <h2>Parameters of the SEIR model</h2>
-              <footer>
-                <p>Transmission rate (&beta;): 0.35</p>
-                <p>Reduction rate for transmission from mildly/asymptomatic infected (&alpha;<sub>C</sub>): 0.75
-                <p>Incubation period (1/&mu;): 4 days</p>
-                <p>Vaccine incubation period (1/&mu;<sub>V</sub>): 14 days</p>
-                <p>Proportaion of exposed becoming moderately/severely infected (&theta;): 0.6</p>
-                <p>Infectious period of moderately/severely infected (1/&gamma;<sub>I</sub>): 4 days</p>
-                <p>Infectious period of mildly/asymptomatic infected (1/&gamma;<sub>C</sub>): 8 days</p>
-                <p>Infectious period of vaccinated if infected (1/&gamma;<sub>P</sub>): 4 days</p>
-                <p>Death rate (1/&sigma;): 0.1/15</p>
-                <p>Immunity period due to moderate/severe infection (1/&omega;<sub>I</sub>): 180 days</p>
-                <p>Immunity period due to mild/asymptomatic infection (1/&omega;<sub>C</sub>): 90 days</p>
-                <p><i>In the next update, parameters of the SEIR model will be variable.</i></p>
-                
-
         </div>
     </div>
 </body>
@@ -86,7 +71,7 @@
 
 <script>
 // set the dimensions and margins of the graph
-var margin = {top: 10, right: 10, bottom: 80, left: 80},
+var margin = {top: 40, right: 10, bottom: 80, left: 80},
   width = 700 - margin.left - margin.right,
   height = 400 - margin.top - margin.bottom;
 
@@ -124,17 +109,17 @@ for (let i = 0; i<plotID.length; i++) {
         .tickValues(Array.from(new Array(13),(val,index)=>index*30))
         .tickFormat((d,i) => Array.from(new Array(13),(val,index)=>index)[i]))
       .selectAll(".tick text")
-      .attr("font-size","16")
-      .attr("font-family","cursive");
+      .attr("font-size","16");
+      // .attr("font-family","cursive");
     // X axis label
     svg[i].append("text")             
         .attr("transform",
               "translate(" + (width/2) + " ," + 
-                             (height + margin.top + 40) + ")")
+                             (height + margin.top + 10) + ")")
         .style("text-anchor", "middle")
         .text("Months")
-        .attr("font-size","20")
-        .attr("font-family","cursive")
+        .attr("font-size","18")
+        // .attr("font-family","cursive")
   };
 
   // Add Y axis
@@ -153,14 +138,14 @@ for (let i = 0; i<plotID.length; i++) {
       .tickValues(Array.from(new Array(9),(val,index)=>index*0.5)))
     .selectAll(".tick text")
     .attr("font-size","16")
-    .attr("font-family","cursive");
+    // .attr("font-family","cursive");
   svg[1].append("g")
     .attr('class', 'y')
     .call(d3.axisLeft(yAxis1)
       .tickValues(Array.from(new Array(13),(val,index)=>index*5)))
     .selectAll(".tick text")
-    .attr("font-size","16")
-    .attr("font-family","cursive");
+    .attr("font-size","16");
+    // .attr("font-family","cursive");
   
   for (let i = 0; i<plotID.length; i++) {
     // y axis label
@@ -172,8 +157,22 @@ for (let i = 0; i<plotID.length; i++) {
         .style("text-anchor", "middle")
         .text("(% of population)")
         .attr("font-size","20")
-        .attr("font-family","cursive")
+        // .attr("font-family","cursive")
   };
+
+  // title
+  svg[0].append("text")
+    .attr("x", (width / 2))             
+    .attr("y", 0 - (margin.top / 2))
+    .attr("text-anchor", "middle")  
+    .style("font-size", "18px") 
+    .text("Active Cases");
+  svg[1].append("text")
+    .attr("x", (width / 2))             
+    .attr("y", 0 - (margin.top / 2))
+    .attr("text-anchor", "middle")  
+    .style("font-size", "18px") 
+    .text("Total Cases");
 
   // add the X gridlines
   for (let i = 0; i<plotID.length; i++) {
@@ -277,10 +276,8 @@ for (let i = 0; i<plotID.length; i++) {
   for (let i = 0; i<plotID.length; i++) {
     svg[i].append("circle").attr("cx",width-20).attr("cy",20).attr("r", 5).style("fill", "#4d9987");
     svg[i].append("rect").attr("x",width-25).attr("y",40).attr("width", 10).attr("height", 10).style("fill", "green").style('opacity', 0.3);
-    svg[i].append("text").attr("x", width-115).attr("y", 20).text("No vaccine").style("font-size", "14px").style("font-family","cursive")
-    .attr("alignment-baseline","middle");
-    svg[i].append("text").attr("x", width-170).attr("y", 45).text("Vaccination window").style("font-size", "14px").style("font-family","cursive")
-    .attr("alignment-baseline","middle")
+    svg[i].append("text").attr("x", width-115).attr("y", 20).text("No vaccine").style("font-size", "14px").attr("alignment-baseline","middle"); //.style("font-family","cursive")
+    svg[i].append("text").attr("x", width-170).attr("y", 45).text("Vaccination window").style("font-size", "14px").attr("alignment-baseline","middle") //.style("font-family","cursive")
   };
 
   var slidersID = ["eff","cov","st","win","dur"];
