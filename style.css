@@ -1,9 +1,15 @@
 {
     box-sizing: border-box;
 }
+html, body {
+  height: 100%;
+  font-family: "Open Sans", "Trebuchet MS", "Helvetica Neue", Arial, Helvetica, sans-serif ! important;
+  line-height:1.5;
+}
 .column {
 float: left;
-width: 50%;
+width: 48%;
+/*border-style: solid;*/
 }
 
 .row:after {
@@ -19,51 +25,73 @@ clear: both;
 span {
 	display: inline-block;
   	width: 30px;
-  	font-weight: 500;
-  	font-family: Garamond;
+  	/*font-weight: 500;*/
+  	/*font-family: Garamond;*/
 }
 
 label {
 	display: inline-block; 
 	width: 350px; 
 	text-align: right; 
-	font-size: 20px; 
-	font-weight: 700; 
-	font-family: Garamond; 
+	font-size: 18px; 
+	/*font-weight: 700; */
+	/*font-family: Garamond; */
 	padding-right: 20px;
 	}
 
 h1 {
-	font-size: 28px;
-	font-weight: 800;
-	font-family: Georgia;
-	text-align: center;
-	color: #404080;
+	color: #13567a;
+    text-transform: none;
+    font-size: 40px;
+    font-weight: 200;
+    line-height: 1.25;
 	}
 h2 {
-	font-size: 28px;
-	font-weight: 800;
+	/*font-size: 18px;
+	font-weight: 400;
 	font-family: Garamond;
 	text-align: center;
+	color: #333333;
+	fill: #333333;*/
+	text-align: center;
+	color: #13567a;
+	text-transform: none;
+	font-family: inherit;
+	line-height: 1.25;
+	font-size: 28px;
+	font-weight: 400;
+	margin-bottom: 10px;
 }
-
-body {
-	background-color: white;
+h3 {
+	color:#6E7064;
+  	font-size: 18px;
+  	padding-top: 50px;
 }
-li{
-	margin: 10px 0;
-	font-size: 20px;
+.jumbotron p {
+	font-family:"Open Sans";
+	color:  black;
+	font-size: 14px; 
+	font-weight: 400;
+}
+b, strong {
+    font-weight: 700;
 }
 footer {
 	display: inline-block; 
-	width: 350px; 
+	width: 600px; 
 	text-align: left; 
-	font-size: 20px; 
-	font-family: Garamond;
-	padding-left: 60px
+	font-size: 14px; 
+	padding-left: 10px
 }
 
 .grid line {
   stroke: lightgrey;
   stroke-opacity: 1;
+}
+
+li a {
+	font-family:"Open Sans";
+	color: #616161;
+	font-size: 14px;
+	padding:0;
 }
